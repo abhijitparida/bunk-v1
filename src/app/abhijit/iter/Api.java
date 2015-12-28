@@ -1,0 +1,96 @@
+package app.abhijit.iter;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class Api {
+
+  public static ApiResponse getApiResponse(String sudentRollNumber) {
+    ApiResponse apiResponse = new ApiResponse();
+    apiResponse.updateAvailable = checkUpdate();
+    String studentJson;
+    try {
+      String instituteId = fetchInstituteId();
+      String studentId = fetchStudentId(instituteId, sudentRollNumber);
+      String registrationId = fetchRegistrationId(instituteId);
+      String lastRefreshed = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
+      String studentDetailsJson = fetchStudentDetailsJson(instituteId, studentId);
+      String attendanceJson = fetchAttendanceJson(instituteId, registrationId, studentId);
+      studentJson = "{\"sudentRollNumber\": \"" + sudentRollNumber + "\", \"instituteId\": \"" + instituteId + "\", \"studentId\": \"" + studentId + "\", \"registrationId\": \"" + registrationId + "\", \"lastRefreshed\": \"" + lastRefreshed + "\", \"studentDetailsJson\": \"" + URLEncoder.encode(studentDetailsJson, "UTF-8") + "\", \"attendanceJson\": \"" + URLEncoder.encode(attendanceJson, "UTF-8") + "\"}";
+    } catch (Exception e) {
+      apiResponse.error = true;
+      apiResponse.errorMessage = "Could not connect to the server";
+      return apiResponse;
+    }
+    Student student = Student.parseJson(studentJson);
+    if (student == null) {
+      apiResponse.error = true;
+      apiResponse.errorMessage = "Bad API response";
+      return apiResponse;
+    }
+    apiResponse.studentJson = studentJson;
+    apiResponse.student = student;
+    return apiResponse;
+  }
+
+  private static String makeApiRequest(String data) throws Exception {
+    URL endPoint = new URL("http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService");
+    HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
+    conn.setRequestMethod("POST");
+    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+    conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+    conn.setDoOutput(true);
+    DataOutputStream outStream = new DataOutputStream(conn.getOutputStream());
+    outStream.writeBytes(data);
+    outStream.flush();
+    outStream.close();
+    BufferedReader inStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    String inStreamLine;
+    StringBuffer response = new StringBuffer();
+    while ((inStreamLine = inStream.readLine()) != null) {
+      response.append(inStreamLine);
+    }
+    inStream.close();
+    return response.toString();
+  }
+
+  private static boolean checkUpdate() {
+    return false;
+  }
+
+  private static String fetchInstituteId() throws Exception {
+    String InstituteId = "SOAUINSD1312A0000002";
+    return InstituteId;
+  }
+
+  private static String fetchStudentId(String instituteId, String sudentRollNumber) throws Exception {
+    String requestData = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22" + instituteId + "%22%2C%22studentrollno%22%3A%22" + sudentRollNumber + "%22%7D";
+    String studentId = makeApiRequest(requestData);
+    return studentId;
+  }
+
+  private static String fetchRegistrationId(String instituteId) throws Exception {
+    String requestData = "jdata=%7B%22sid%22%3A%22registrationcode%22%2C%22labelname%22%3A%22Select%20Registration%20Code%22%2C%22instituteID%22%3A%22" + instituteId + "%22%7D";
+    String registrationId = makeApiRequest(requestData).substring(16, 36);
+    return registrationId;
+  }
+
+  private static String fetchStudentDetailsJson(String instituteId, String studentId) throws Exception {
+    String requestData = "jdata=%7B%22sid%22%3A%22studentdetails%22%2C%22instituteid%22%3A%22" + instituteId + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
+    String studentDetailsJson = makeApiRequest(requestData);
+    return studentDetailsJson;
+  }
+
+  private static String fetchAttendanceJson(String instituteId, String registrationId, String studentId) throws Exception {
+    String requestData = "jdata=%7B%22sid%22%3A%22attendance%22%2C%22instituteid%22%3A%22" + instituteId + "%22%2C%22registrationid%22%3A%22" + registrationId + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
+    String attendanceDetails = makeApiRequest(requestData);
+    return attendanceDetails;
+  }
+
+}
