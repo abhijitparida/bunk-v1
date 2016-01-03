@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -146,7 +147,23 @@ public class MainActivity extends Activity {
 
   private void showInfo(String message) {
     TextView info = (TextView) findViewById(R.id.textview_info);
+    info.setVisibility(View.VISIBLE);
     info.setText(message);
+  }
+
+  private void hideInfo() {
+    TextView info = (TextView) findViewById(R.id.textview_info);
+    info.setVisibility(View.GONE);
+  }
+
+  private void showProgressBar() {
+    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    progressBar.setVisibility(View.VISIBLE);
+  }
+
+  private void hideProgressBar() {
+    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    progressBar.setVisibility(View.INVISIBLE);
   }
 
   private void addRegistrationNumber(String registrationNumber) {
@@ -175,7 +192,7 @@ public class MainActivity extends Activity {
     if (student == null) {
       studentDetails.setText("");
       studentCourses.setAdapter(new CoursesAdapter(context, new Course[0]));
-      showInfo("");
+      hideInfo();
       return;
     }
     String text = student.name + "\n" + student.sudentRollNumber + "\n" + student.sectionCode + " " + student.programCode + "-" + student.academicYear;
@@ -184,7 +201,7 @@ public class MainActivity extends Activity {
       text += "\nLast refreshed: " + student.lastRefreshed;
     }
     studentDetails.setText(text);
-    showInfo("");
+    hideInfo();
     if (student.attendance == null) {
       studentCourses.setAdapter(new CoursesAdapter(context, new Course[0]));
       showInfo("NO ATTENDANCE DATA AVAILABLE");
@@ -199,7 +216,7 @@ public class MainActivity extends Activity {
     protected void onPreExecute() {
       super.onPreExecute();
       TextView info = (TextView) findViewById(R.id.textview_info);
-      showInfo("LOADING...");
+      showProgressBar();
     }
 
     @Override
@@ -210,7 +227,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPostExecute(ApiResponse result) {
       super.onPostExecute(result);
-      showInfo("");
+      hideProgressBar();
       handleApiResponse(result);
     }
 

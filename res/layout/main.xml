@@ -7,6 +7,12 @@
       android:layout_height="wrap_content"
       android:layout_width="fill_parent"
       android:id="@+id/textview_student_details" />
+    <ProgressBar
+      style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:indeterminate="true"
+      android:id="@+id/progressbar" />
     <TextView
       android:layout_height="wrap_content"
       android:layout_width="fill_parent"
