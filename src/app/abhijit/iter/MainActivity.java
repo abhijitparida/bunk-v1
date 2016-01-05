@@ -121,9 +121,9 @@ public class MainActivity extends Activity {
 
   private void promptUpdate(String updateMessage) {
     AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-    alertDialog.setTitle("Update");
+    alertDialog.setTitle("Update Available");
     alertDialog.setMessage(updateMessage);
-    alertDialog.setPositiveButton("Install", new DialogInterface.OnClickListener() {
+    alertDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://ninjadoge24.github.io")));
@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
   private void promptError(String errorMessage) {
     AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
     alertDialog.setTitle("Error");
-    alertDialog.setMessage("Error: " + errorMessage);
+    alertDialog.setMessage(errorMessage);
     alertDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
@@ -145,25 +145,19 @@ public class MainActivity extends Activity {
     alertDialog.create().show();
   }
 
-  private void showInfo(String message) {
-    TextView info = (TextView) findViewById(R.id.textview_info);
-    info.setVisibility(View.VISIBLE);
-    info.setText(message);
-  }
-
-  private void hideInfo() {
-    TextView info = (TextView) findViewById(R.id.textview_info);
-    info.setVisibility(View.GONE);
-  }
-
   private void showProgressBar() {
     ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    if (db.getValue(db.current()) == null) {
+      progressBar = (ProgressBar) findViewById(R.id.progressbar_spinner);
+    }
     progressBar.setVisibility(View.VISIBLE);
   }
 
   private void hideProgressBar() {
     ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    ProgressBar progressBarSpinner = (ProgressBar) findViewById(R.id.progressbar_spinner);
     progressBar.setVisibility(View.INVISIBLE);
+    progressBarSpinner.setVisibility(View.GONE);
   }
 
   private void addRegistrationNumber(String registrationNumber) {
@@ -175,39 +169,47 @@ public class MainActivity extends Activity {
   }
 
   private void handleApiResponse(ApiResponse apiResponse) {
+    if (apiResponse.updateAvailable) {
+      promptUpdate("A new version of this app is available!");
+    }
     if (apiResponse.error) {
       promptError(apiResponse.errorMessage);
       return;
-    }
-    if (apiResponse.updateAvailable) {
-      promptUpdate("A new version of this app is available!");
     }
     db.addValue(apiResponse.student.sudentRollNumber, apiResponse.studentJson);
     renderProfile(apiResponse.student);
   }
 
   private void renderProfile(Student student) {
-    TextView studentDetails = (TextView) findViewById(R.id.textview_student_details);
-    ListView studentCourses = (ListView) findViewById(R.id.listview_student_courses);
+    TextView studentName = (TextView) findViewById(R.id.textview_student_name);
+    TextView studentRollNumber = (TextView) findViewById(R.id.textview_student_roll_number);
+    TextView studentExtraInfo = (TextView) findViewById(R.id.textview_student_extra_info);
+    TextView lastRefreshed = (TextView) findViewById(R.id.textview_last_refreshed);
+    TextView info = (TextView) findViewById(R.id.textview_info);
+    ListView courses = (ListView) findViewById(R.id.listview_courses);
+    studentName.setText("");
+    studentRollNumber.setText("");
+    studentExtraInfo.setText("");
+    lastRefreshed.setVisibility(View.GONE);
+    info.setVisibility(View.GONE);
+    courses.setAdapter(new CoursesAdapter(context, new Course[0]));
     if (student == null) {
-      studentDetails.setText("");
-      studentCourses.setAdapter(new CoursesAdapter(context, new Course[0]));
-      hideInfo();
       return;
     }
-    String text = student.name + "\n" + student.sudentRollNumber + "\n" + student.sectionCode + " " + student.programCode + "-" + student.academicYear;
+    studentName.setText(student.name);
+    studentRollNumber.setText(student.sudentRollNumber);
+    studentExtraInfo.setText(student.sectionCode + " " + student.programCode + "-" + student.academicYear);
     String today = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
     if (!today.equals(student.lastRefreshed)) {
-      text += "\nLast refreshed: " + student.lastRefreshed;
+      lastRefreshed.setVisibility(View.VISIBLE);
+      lastRefreshed.setText("Last refreshed: " + student.lastRefreshed);
     }
-    studentDetails.setText(text);
-    hideInfo();
     if (student.attendance == null) {
-      studentCourses.setAdapter(new CoursesAdapter(context, new Course[0]));
-      showInfo("NO ATTENDANCE DATA AVAILABLE");
+      info.setVisibility(View.VISIBLE);
+      info.setText("NO ATTENDANCE DATA AVAILABLE");
       return;
     }
-    studentCourses.setAdapter(new CoursesAdapter(context, student.attendance));
+    courses.setAdapter(new CoursesAdapter(context, student.attendance));
   }
 
   private class fetchData extends AsyncTask<Void, Void, ApiResponse> {
@@ -263,19 +265,26 @@ public class MainActivity extends Activity {
       Course course = getItem(id);
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       view = inflater.inflate(R.layout.course, viewGroup, false);
-      TextView courseDetails = (TextView) view.findViewById(R.id.textview_course_details);
-      String text = course.name + "\n" + course.subjectCode + "\nPresent: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + " Leave Taken: " + course.totalLeaveTaken + "\n";
+      if (id % 2 != 0) {
+        view.setBackgroundColor(context.getResources().getColor(R.color.white));
+      }
+      TextView courseName = (TextView) view.findViewById(R.id.textview_course_name);
+      TextView courseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
+      TextView courseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
+      courseName.setText(course.name + "\n" + course.subjectCode);
+      courseAttendance.setText("Present: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + " Leave Taken: " + course.totalLeaveTaken);
+      String extraInfo = "";
       for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
         String days = bunk.getKey();
         String attendance = bunk.getValue();
-        text += "bunk " + days + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        extraInfo += "Bunk " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
       }
       for (Map.Entry<String, String> need : course.need.entrySet()) {
         String days = need.getKey();
         String attendance = need.getValue();
-        text += "need " + days + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        extraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
       }
-      courseDetails.setText(text);
+      courseExtraInfo.setText(extraInfo.substring(0, extraInfo.length() - 1));
       return view;
     }
 

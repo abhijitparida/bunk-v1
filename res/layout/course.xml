@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:orientation="horizontal"
-  android:layout_height="fill_parent"
-  android:layout_width="fill_parent">
+  android:orientation="vertical"
+  android:layout_height="wrap_content"
+  android:layout_width="fill_parent"
+  android:paddingTop="@dimen/padding_half"
+  android:paddingRight="@dimen/padding_full"
+  android:paddingBottom="@dimen/padding_half"
+  android:paddingLeft="@dimen/padding_full"
+  android:background="@color/blue">
     <TextView
-      android:id="@+id/textview_course_details"
       android:layout_height="wrap_content"
-      android:layout_width="fill_parent" />
+      android:layout_width="fill_parent"
+      android:textSize="@dimen/h3"
+      android:id="@+id/textview_course_name" />
+    <TextView
+      android:layout_height="wrap_content"
+      android:layout_width="fill_parent"
+      android:id="@+id/textview_course_attendance" />
+    <TextView
+      android:layout_height="wrap_content"
+      android:layout_width="fill_parent"
+      android:id="@+id/textview_course_extra_info" />
 </LinearLayout>
