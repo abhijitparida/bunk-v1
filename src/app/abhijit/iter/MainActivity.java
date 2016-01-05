@@ -83,6 +83,10 @@ public class MainActivity extends Activity {
       @Override
       public void onClick(DialogInterface dialog, int which) {
         String registrationNumber = editText.getText().toString().trim();
+        if (registrationNumber.equals("")) {
+          promptRegistrationNumber();
+          return;
+        }
         addRegistrationNumber(registrationNumber);
       }
     });
