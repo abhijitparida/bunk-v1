@@ -5,7 +5,7 @@
     <item name="android:windowBackground">@color/white</item>
   </style>
   <style name="ITER.ActionBarStyle" parent="@android:style/Widget.Holo.Light.ActionBar">
-    <item name="android:background">@color/blueDark</item>
+    <item name="android:background">@color/blue_dark</item>
     <item name="android:logo">@color/transparent</item>
     <item name="android:titleTextStyle">@style/ITER.ActionBar.TitleTextStyle</item>
   </style>
