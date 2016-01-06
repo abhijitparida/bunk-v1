@@ -11,6 +11,8 @@ import java.util.Date;
 
 public class Api {
 
+  private static final String API_ENDPOINT_URL = "http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
+
   public static ApiResponse getApiResponse(String sudentRollNumber) {
     ApiResponse apiResponse = new ApiResponse();
     apiResponse.updateAvailable = checkUpdate();
@@ -39,8 +41,8 @@ public class Api {
     return apiResponse;
   }
 
-  private static String makeApiRequest(String data) throws Exception {
-    URL endPoint = new URL("http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService");
+  private static String makeHttpPostRequest(String url, String data) throws Exception {
+    URL endPoint = new URL(url);
     HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
     conn.setRequestMethod("POST");
     conn.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -65,31 +67,31 @@ public class Api {
   }
 
   private static String fetchInstituteId() throws Exception {
-    String InstituteId = "SOAUINSD1312A0000002";
-    return InstituteId;
+    String instituteId = "SOAUINSD1312A0000002";
+    return instituteId;
   }
 
   private static String fetchStudentId(String instituteId, String sudentRollNumber) throws Exception {
     String requestData = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22" + instituteId + "%22%2C%22studentrollno%22%3A%22" + sudentRollNumber + "%22%7D";
-    String studentId = makeApiRequest(requestData);
+    String studentId = makeHttpPostRequest(API_ENDPOINT_URL, requestData);
     return studentId;
   }
 
   private static String fetchRegistrationId(String instituteId) throws Exception {
     String requestData = "jdata=%7B%22sid%22%3A%22registrationcode%22%2C%22labelname%22%3A%22Select%20Registration%20Code%22%2C%22instituteID%22%3A%22" + instituteId + "%22%7D";
-    String registrationId = makeApiRequest(requestData).substring(16, 36);
+    String registrationId = makeHttpPostRequest(API_ENDPOINT_URL, requestData).substring(16, 36);
     return registrationId;
   }
 
   private static String fetchStudentDetailsJson(String instituteId, String studentId) throws Exception {
     String requestData = "jdata=%7B%22sid%22%3A%22studentdetails%22%2C%22instituteid%22%3A%22" + instituteId + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
-    String studentDetailsJson = makeApiRequest(requestData);
+    String studentDetailsJson = makeHttpPostRequest(API_ENDPOINT_URL, requestData);
     return studentDetailsJson;
   }
 
   private static String fetchAttendanceJson(String instituteId, String registrationId, String studentId) throws Exception {
     String requestData = "jdata=%7B%22sid%22%3A%22attendance%22%2C%22instituteid%22%3A%22" + instituteId + "%22%2C%22registrationid%22%3A%22" + registrationId + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
-    String attendanceDetails = makeApiRequest(requestData);
+    String attendanceDetails = makeHttpPostRequest(API_ENDPOINT_URL, requestData);
     return attendanceDetails;
   }
 
