@@ -31,3 +31,6 @@ proguard/
 
 # Android Studio captures folder
 captures/
+
+app.abhijit.iter.keystore
+secure.properties
