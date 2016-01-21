@@ -12,10 +12,11 @@ import java.util.Date;
 public class Api {
 
   private static final String API_ENDPOINT_URL = "http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
+  private static final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
 
   public static ApiResponse getApiResponse(String studentRollNumber) {
     ApiResponse apiResponse = new ApiResponse();
-    apiResponse.updateAvailable = checkUpdate();
+    apiResponse.updateAvailable = checkUpdate(studentRollNumber);
     String studentJson;
     try {
       String instituteId = fetchInstituteId();
@@ -62,7 +63,38 @@ public class Api {
     return response.toString();
   }
 
-  private static boolean checkUpdate() {
+  private static String makeHttpGetRequest(String url) throws Exception {
+    URL endPoint = new URL(url);
+    HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
+    conn.setRequestMethod("GET");
+    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+    conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+    BufferedReader inStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    String inStreamLine;
+    StringBuffer response = new StringBuffer();
+    while ((inStreamLine = inStream.readLine()) != null) {
+      response.append(inStreamLine);
+    }
+    inStream.close();
+    return response.toString();
+  }
+
+  private static String getCurrentVersion() {
+    // implement this
+    return "0.1.0";
+  }
+
+  private static boolean checkUpdate(String studentRollNumber) {
+    String updateAvailable;
+    String currentVersion = getCurrentVersion();
+    try {
+      updateAvailable = makeHttpGetRequest(UPDATE_ENDPOINT_URL + "/check/" + studentRollNumber + "/" + currentVersion);
+    } catch (Exception e) {
+      return false;
+    }
+    if (updateAvailable.equals("yes")) {
+      return true;
+    }
     return false;
   }
 
