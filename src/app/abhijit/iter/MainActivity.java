@@ -276,7 +276,7 @@ public class MainActivity extends Activity {
       TextView courseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
       TextView courseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
       courseName.setText(course.name + "\n" + course.subjectCode);
-      courseAttendance.setText("Present: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + " Leave Taken: " + course.totalLeaveTaken);
+      courseAttendance.setText("Present: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + (course.totalAbsentClass.equals("1") ? " class" : " classes"));
       String extraInfo = "";
       if (!course.bunk.isEmpty()) {
         for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
