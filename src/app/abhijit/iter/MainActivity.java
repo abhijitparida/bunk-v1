@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
     alertDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://ninjadoge24.github.io")));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://iter-update-server.herokuapp.com")));
       }
     });
     alertDialog.create().show();
