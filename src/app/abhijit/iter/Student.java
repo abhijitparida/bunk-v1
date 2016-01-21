@@ -8,7 +8,7 @@ import java.net.URLDecoder;
 
 public class Student {
 
-  public String sudentRollNumber;
+  public String studentRollNumber;
   public String instituteId;
   public String studentId;
   public String registrationId;
@@ -32,7 +32,7 @@ public class Student {
       return null;
     }
     Student student = new Student();
-    student.sudentRollNumber = String.valueOf(studentJson.get("sudentRollNumber"));
+    student.studentRollNumber = String.valueOf(studentJson.get("studentRollNumber"));
     student.instituteId = String.valueOf(studentJson.get("instituteId"));
     student.studentId = String.valueOf(studentJson.get("studentId"));
     student.registrationId = String.valueOf(studentJson.get("registrationId"));
@@ -41,7 +41,7 @@ public class Student {
     student.name = String.valueOf(studentDetailsJson.get("name"));
     student.programCode = String.valueOf(studentDetailsJson.get("programcode"));
     student.academicYear = String.valueOf(studentDetailsJson.get("academicyear"));
-    if (student.sudentRollNumber == null
+    if (student.studentRollNumber == null
         || student.instituteId == null
         || student.studentId == null
         || student.registrationId == null

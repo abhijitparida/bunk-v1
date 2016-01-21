@@ -180,7 +180,7 @@ public class MainActivity extends Activity {
       promptError(apiResponse.errorMessage);
       return;
     }
-    db.addValue(apiResponse.student.sudentRollNumber, apiResponse.studentJson);
+    db.addValue(apiResponse.student.studentRollNumber, apiResponse.studentJson);
     renderProfile(apiResponse.student);
   }
 
@@ -201,7 +201,7 @@ public class MainActivity extends Activity {
       return;
     }
     studentName.setText(student.name);
-    studentRollNumber.setText(student.sudentRollNumber);
+    studentRollNumber.setText(student.studentRollNumber);
     studentExtraInfo.setText(student.sectionCode + " " + student.programCode + "-" + student.academicYear);
     String today = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
     if (!today.equals(student.lastRefreshed)) {

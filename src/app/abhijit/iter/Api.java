@@ -13,18 +13,18 @@ public class Api {
 
   private static final String API_ENDPOINT_URL = "http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
 
-  public static ApiResponse getApiResponse(String sudentRollNumber) {
+  public static ApiResponse getApiResponse(String studentRollNumber) {
     ApiResponse apiResponse = new ApiResponse();
     apiResponse.updateAvailable = checkUpdate();
     String studentJson;
     try {
       String instituteId = fetchInstituteId();
-      String studentId = fetchStudentId(instituteId, sudentRollNumber);
+      String studentId = fetchStudentId(instituteId, studentRollNumber);
       String registrationId = fetchRegistrationId(instituteId);
       String lastRefreshed = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
       String studentDetailsJson = fetchStudentDetailsJson(instituteId, studentId);
       String attendanceJson = fetchAttendanceJson(instituteId, registrationId, studentId);
-      studentJson = "{\"sudentRollNumber\": \"" + sudentRollNumber + "\", \"instituteId\": \"" + instituteId + "\", \"studentId\": \"" + studentId + "\", \"registrationId\": \"" + registrationId + "\", \"lastRefreshed\": \"" + lastRefreshed + "\", \"studentDetailsJson\": \"" + URLEncoder.encode(studentDetailsJson, "UTF-8") + "\", \"attendanceJson\": \"" + URLEncoder.encode(attendanceJson, "UTF-8") + "\"}";
+      studentJson = "{\"studentRollNumber\": \"" + studentRollNumber + "\", \"instituteId\": \"" + instituteId + "\", \"studentId\": \"" + studentId + "\", \"registrationId\": \"" + registrationId + "\", \"lastRefreshed\": \"" + lastRefreshed + "\", \"studentDetailsJson\": \"" + URLEncoder.encode(studentDetailsJson, "UTF-8") + "\", \"attendanceJson\": \"" + URLEncoder.encode(attendanceJson, "UTF-8") + "\"}";
     } catch (Exception e) {
       apiResponse.error = true;
       apiResponse.errorMessage = "Could not connect to the server";
@@ -71,8 +71,8 @@ public class Api {
     return instituteId;
   }
 
-  private static String fetchStudentId(String instituteId, String sudentRollNumber) throws Exception {
-    String requestData = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22" + instituteId + "%22%2C%22studentrollno%22%3A%22" + sudentRollNumber + "%22%7D";
+  private static String fetchStudentId(String instituteId, String studentRollNumber) throws Exception {
+    String requestData = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22" + instituteId + "%22%2C%22studentrollno%22%3A%22" + studentRollNumber + "%22%7D";
     String studentId = makeHttpPostRequest(API_ENDPOINT_URL, requestData);
     return studentId;
   }
