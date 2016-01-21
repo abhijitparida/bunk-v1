@@ -278,17 +278,26 @@ public class MainActivity extends Activity {
       courseName.setText(course.name + "\n" + course.subjectCode);
       courseAttendance.setText("Present: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + " Leave Taken: " + course.totalLeaveTaken);
       String extraInfo = "";
-      for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
-        String days = bunk.getKey();
-        String attendance = bunk.getValue();
-        extraInfo += "Bunk " + days + (course.totalAbsentClass.equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+      if (!course.bunk.isEmpty()) {
+        for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
+          String days = bunk.getKey();
+          String attendance = bunk.getValue();
+          extraInfo += "Bunk " + days + (course.totalAbsentClass.equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        }
       }
-      for (Map.Entry<String, String> need : course.need.entrySet()) {
-        String days = need.getKey();
-        String attendance = need.getValue();
-        extraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+      if (!course.need.isEmpty()) {
+        for (Map.Entry<String, String> need : course.need.entrySet()) {
+          String days = need.getKey();
+          String attendance = need.getValue();
+          extraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        }
       }
-      courseExtraInfo.setText(extraInfo.substring(0, extraInfo.length() - 1));
+      if (!extraInfo.isEmpty()) {
+        courseExtraInfo.setVisibility(View.VISIBLE);
+        courseExtraInfo.setText(extraInfo.substring(0, extraInfo.length() - 1));
+      } else {
+        courseExtraInfo.setVisibility(View.GONE);
+      }
       return view;
     }
 
