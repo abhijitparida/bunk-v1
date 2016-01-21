@@ -67,7 +67,7 @@ public class Course {
       }
       for (int n = nextP; n <= 95; n += 5) {
         int daysNeed = (int) ((n * totalClasses - 100 * totalPresentClass) - (100 - n));
-        if (daysNeed > 0) {
+        if (daysNeed > 0 && daysNeed <= 10) {
           course.need.put(Integer.toString(daysNeed), Integer.toString(n) + "%");
         }
       }

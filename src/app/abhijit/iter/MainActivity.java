@@ -281,7 +281,7 @@ public class MainActivity extends Activity {
       for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
         String days = bunk.getKey();
         String attendance = bunk.getValue();
-        extraInfo += "Bunk " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        extraInfo += "Bunk " + days + (course.totalAbsentClass.equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
       }
       for (Map.Entry<String, String> need : course.need.entrySet()) {
         String days = need.getKey();
