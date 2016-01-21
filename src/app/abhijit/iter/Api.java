@@ -21,6 +21,11 @@ public class Api {
     try {
       String instituteId = fetchInstituteId();
       String studentId = fetchStudentId(instituteId, studentRollNumber);
+      if (studentId.equals("0")) {
+        apiResponse.error = true;
+        apiResponse.errorMessage = "Invalid registration number";
+        return apiResponse;
+      }
       String registrationId = fetchRegistrationId(instituteId);
       String lastRefreshed = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
       String studentDetailsJson = fetchStudentDetailsJson(instituteId, studentId);
