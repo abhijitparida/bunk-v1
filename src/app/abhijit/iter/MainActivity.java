@@ -127,10 +127,17 @@ public class MainActivity extends Activity {
     AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
     alertDialog.setTitle("Update Available");
     alertDialog.setMessage(updateMessage);
+    alertDialog.setCancelable(false);
     alertDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://iter-update-server.herokuapp.com")));
+      }
+    });
+    alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        dialog.cancel();
       }
     });
     alertDialog.create().show();
