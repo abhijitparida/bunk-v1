@@ -20,39 +20,26 @@ public class Student {
   public Course[] attendance;
 
   public static Student parseJson(String json) {
-    JSONParser parser = new JSONParser();
-    JSONObject studentJson;
-    JSONObject studentDetailsJson;
-    String attendanceJson;
+    Student student;
     try {
-      studentJson = (JSONObject) parser.parse(json);
-      studentDetailsJson = (JSONObject) ((JSONArray) parser.parse(URLDecoder.decode(String.valueOf(studentJson.get("studentDetailsJson")), "UTF-8"))).get(0);
-      attendanceJson = URLDecoder.decode(String.valueOf(studentJson.get("attendanceJson")), "UTF-8");
+      JSONParser parser = new JSONParser();
+      JSONObject studentJson = (JSONObject) parser.parse(json);
+      JSONObject studentDetailsJson = (JSONObject) ((JSONArray) parser.parse(URLDecoder.decode(String.valueOf(studentJson.get("studentDetailsJson")), "UTF-8"))).get(0);
+      String attendanceJson = URLDecoder.decode(String.valueOf(studentJson.get("attendanceJson")), "UTF-8");
+      student = new Student();
+      student.studentRollNumber = String.valueOf(studentJson.get("studentRollNumber"));
+      student.instituteId = String.valueOf(studentJson.get("instituteId"));
+      student.studentId = String.valueOf(studentJson.get("studentId"));
+      student.registrationId = String.valueOf(studentJson.get("registrationId"));
+      student.lastRefreshed = String.valueOf(studentJson.get("lastRefreshed"));
+      student.sectionCode = String.valueOf(studentDetailsJson.get("sectioncode"));
+      student.name = String.valueOf(studentDetailsJson.get("name"));
+      student.programCode = String.valueOf(studentDetailsJson.get("programcode"));
+      student.academicYear = String.valueOf(studentDetailsJson.get("academicyear"));
+      student.attendance = Course.parseJson(attendanceJson);
     } catch (Exception e) {
-      return null;
+      student = null;
     }
-    Student student = new Student();
-    student.studentRollNumber = String.valueOf(studentJson.get("studentRollNumber"));
-    student.instituteId = String.valueOf(studentJson.get("instituteId"));
-    student.studentId = String.valueOf(studentJson.get("studentId"));
-    student.registrationId = String.valueOf(studentJson.get("registrationId"));
-    student.lastRefreshed = String.valueOf(studentJson.get("lastRefreshed"));
-    student.sectionCode = String.valueOf(studentDetailsJson.get("sectioncode"));
-    student.name = String.valueOf(studentDetailsJson.get("name"));
-    student.programCode = String.valueOf(studentDetailsJson.get("programcode"));
-    student.academicYear = String.valueOf(studentDetailsJson.get("academicyear"));
-    if (student.studentRollNumber == null
-        || student.instituteId == null
-        || student.studentId == null
-        || student.registrationId == null
-        || student.lastRefreshed == null
-        || student.sectionCode == null
-        || student.name == null
-        || student.programCode == null
-        || student.academicYear == null) {
-      return null;
-    }
-    student.attendance = Course.parseJson(attendanceJson);
     return student;
   }
 
