@@ -86,7 +86,7 @@ public class Api {
 
   private static String getCurrentVersion() {
     // implement this
-    return "1.0.0";
+    return "1.1.0";
   }
 
   private static boolean checkUpdate(String studentRollNumber) {

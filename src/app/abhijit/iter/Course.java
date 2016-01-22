@@ -60,14 +60,14 @@ public class Course {
         nextP = p + 5;
       }
       for (int n = 75; n < p; n += 5) {
-        int daysBunk = (int) ((100 * totalPresentClass / n) - totalClasses);
+        int daysBunk = (int) ((100 * totalPresentClass / (float) n) - (float) totalClasses);
         if (daysBunk > 0) {
           course.bunk.put(Integer.toString(daysBunk), Integer.toString(n) + "%");
         }
       }
       for (int n = nextP; n <= 95; n += 5) {
-        int daysNeed = (int) ((n * totalClasses - 100 * totalPresentClass) - (100 - n));
-        if (daysNeed > 0 && daysNeed <= 15) {
+        int daysNeed = (int) ((n * totalClasses - 100 * totalPresentClass) / (float) (100 - n));
+        if (daysNeed > 0 && (daysNeed + totalClasses <= 50)) {
           course.need.put(Integer.toString(daysNeed), Integer.toString(n) + "%");
         }
       }
