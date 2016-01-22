@@ -11,7 +11,7 @@ import java.util.Date;
 
 public class Api {
 
-  private static final String API_ENDPOINT_URL = "http://111.93.164.203:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
+  private static final String API_ENDPOINT_URL = "http://111.93.164.202:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
   private static final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
 
   public static ApiResponse getApiResponse(String studentRollNumber) {
