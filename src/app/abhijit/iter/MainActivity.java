@@ -30,12 +30,14 @@ public class MainActivity extends Activity {
 
   private Context context = this;
   private Db db;
+  private Api api;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
     db = new Db(context);
+    api = new Api();
     if (db.size() == 0) {
       promptRegistrationNumber();
     } else {
@@ -234,7 +236,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected ApiResponse doInBackground(Void... params) {
-      return Api.getApiResponse(db.current());
+      return api.getApiResponse(db.current());
     }
 
     @Override
