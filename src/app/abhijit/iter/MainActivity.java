@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
     db = new Db(context);
-    api = new Api();
+    api = new Api(context);
     if (db.size() == 0) {
       promptRegistrationNumber();
     } else {

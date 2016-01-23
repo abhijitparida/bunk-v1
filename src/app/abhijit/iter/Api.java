@@ -1,5 +1,8 @@
 package app.abhijit.iter;
 
+import android.content.Context;
+import android.webkit.WebSettings;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -13,6 +16,11 @@ public class Api {
 
   private final String API_ENDPOINT_URL = "http://111.93.164.202:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
   private final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
+  private Context context;
+
+  public Api(Context context) {
+    this.context = context;
+  }
 
   public ApiResponse getApiResponse(String studentRollNumber) {
     ApiResponse apiResponse = new ApiResponse();
@@ -49,9 +57,10 @@ public class Api {
 
   private String makeHttpPostRequest(String url, String data) throws Exception {
     URL endPoint = new URL(url);
+    String userAgent = WebSettings.getDefaultUserAgent(context);
     HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
     conn.setRequestMethod("POST");
-    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+    conn.setRequestProperty("User-Agent", userAgent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
     conn.setDoOutput(true);
     DataOutputStream outStream = new DataOutputStream(conn.getOutputStream());
@@ -70,9 +79,10 @@ public class Api {
 
   private String makeHttpGetRequest(String url) throws Exception {
     URL endPoint = new URL(url);
+    String userAgent = WebSettings.getDefaultUserAgent(context);
     HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
     conn.setRequestMethod("GET");
-    conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+    conn.setRequestProperty("User-Agent", userAgent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
     BufferedReader inStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
     String inStreamLine;
@@ -86,7 +96,7 @@ public class Api {
 
   private String getCurrentVersion() {
     // implement this
-    return "1.2.0";
+    return "1.3.0";
   }
 
   private boolean checkUpdate(String studentRollNumber) {
