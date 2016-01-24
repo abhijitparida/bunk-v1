@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -189,8 +190,11 @@ public class MainActivity extends Activity {
       promptError(apiResponse.errorMessage);
       return;
     }
+    String oldStudentJson = db.getValue(apiResponse.student.studentRollNumber);
+    Student oldStudent = Student.parseJson(oldStudentJson);
     db.addValue(apiResponse.student.studentRollNumber, apiResponse.studentJson);
     renderProfile(apiResponse.student);
+    toastChanges(oldStudent, apiResponse.student);
   }
 
   private void renderProfile(Student student) {
@@ -223,6 +227,34 @@ public class MainActivity extends Activity {
       return;
     }
     courses.setAdapter(new CoursesAdapter(context, student.attendance));
+  }
+
+  private void toastChanges(Student oldStudent, Student student) {
+    if (oldStudent == null) {
+      return;
+    }
+    int changedSubjectsCount = 0;
+    String changedSubjects = "";
+    for (int i = 0; i < student.attendance.length; i++) {
+      Course course = student.attendance[i];
+      for (int j = 0; j < oldStudent.attendance.length; j++) {
+        Course oldCourse = oldStudent.attendance[j];
+        if (course.subjectCode.equals(oldCourse.subjectCode)) {
+          if (!course.totalClasses.equals(oldCourse.totalClasses)) {
+            changedSubjects += course.name + ", ";
+            changedSubjectsCount++;
+          }
+        }
+      }
+    }
+    if (changedSubjectsCount > 0) {
+      String toastText = "UPDATES: " + changedSubjects.substring(0, changedSubjects.length() - 2);
+      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
+      Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+      vibrator.vibrate(500);
+    }
   }
 
   private class fetchData extends AsyncTask<Void, Void, ApiResponse> {
