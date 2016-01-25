@@ -263,6 +263,7 @@ public class MainActivity extends Activity {
     protected void onPreExecute() {
       super.onPreExecute();
       TextView info = (TextView) findViewById(R.id.textview_info);
+      hideProgressBar();
       showProgressBar();
     }
 
