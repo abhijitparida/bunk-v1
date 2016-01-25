@@ -134,7 +134,7 @@ public class MainActivity extends Activity {
     alertDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://iter-update-server.herokuapp.com")));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://abhijitparida.github.io/ITER/")));
       }
     });
     alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
