@@ -96,7 +96,7 @@ public class Api {
 
   private String getCurrentVersion() {
     // implement this
-    return "1.4.1";
+    return "1.4.2";
   }
 
   private boolean checkUpdate(String studentRollNumber) {
@@ -125,8 +125,9 @@ public class Api {
   }
 
   private String fetchRegistrationId(String instituteId) throws Exception {
-    String requestData = "jdata=%7B%22sid%22%3A%22registrationcode%22%2C%22labelname%22%3A%22Select%20Registration%20Code%22%2C%22instituteID%22%3A%22" + instituteId + "%22%7D";
-    String registrationId = makeHttpPostRequest(API_ENDPOINT_URL, requestData).substring(16, 36);
+    //String requestData = "jdata=%7B%22sid%22%3A%22registrationcode%22%2C%22labelname%22%3A%22Select%20Registration%20Code%22%2C%22instituteID%22%3A%22" + instituteId + "%22%7D";
+    //String registrationId = makeHttpPostRequest(API_ENDPOINT_URL, requestData).substring(16, 36);
+    String registrationId = "ITERRETD1511A0000001";
     return registrationId;
   }
 
