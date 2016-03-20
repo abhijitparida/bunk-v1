@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <Preference
+    android:key="pref_version"
+    android:title="Version"
+    android:summary="@string/app_version"
+    android:enabled="true" />
+  <Preference
+    android:title="Developer"
+    android:summary="Abhijit" />
+  <Preference
+    android:key="pref_feedback"
+    android:title="Feedback"
+    android:enabled="true" />
+  <Preference
+    android:key="pref_contribute"
+    android:title="Contribute"
+    android:summary="https://github.com/abhijitparida/ITER/"
+    android:enabled="true" />
+  <Preference
+    android:key="pref_rate"
+    android:title="Love this app?"
+    android:summary="Rate it five stars!"
+    android:enabled="true" />
+  <Preference
+    android:title="Pro-Tip"
+    android:summary="You can bunk 12 classes in a 4-credit course and 10 classes in a 3-credit course in a semester." />
+</PreferenceScreen>
