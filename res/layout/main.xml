@@ -45,7 +45,14 @@
       android:paddingLeft="@dimen/padding_full"
       android:paddingRight="@dimen/padding_full"
       android:textColor="@color/red"
-      android:id="@+id/textview_info" />
+      android:id="@+id/textview_error" />
+    <TextView
+      android:layout_height="wrap_content"
+      android:layout_width="fill_parent"
+      android:paddingLeft="@dimen/padding_full"
+      android:paddingRight="@dimen/padding_full"
+      android:gravity="center"
+      android:id="@+id/textview_hint" />
     <ListView
       android:layout_height="wrap_content"
       android:layout_width="fill_parent"
