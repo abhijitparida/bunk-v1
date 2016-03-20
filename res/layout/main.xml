@@ -24,10 +24,6 @@
           android:layout_height="wrap_content"
           android:layout_width="fill_parent"
           android:id="@+id/textview_student_extra_info" />
-        <TextView
-          android:layout_height="wrap_content"
-          android:layout_width="fill_parent"
-          android:id="@+id/textview_last_refreshed" />
     </LinearLayout>
     <ProgressBar
       style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
