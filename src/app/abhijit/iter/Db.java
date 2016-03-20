@@ -2,70 +2,64 @@ package app.abhijit.iter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.TextUtils;
 
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Map;
+import java.util.TreeSet;
 
 public class Db {
 
-  private LinkedList<String> keys = new LinkedList<String>();
   private Context context;
   private SharedPreferences sharedPreferences;
+  private TreeSet<String> keys;
+  private String currentkey;
 
   public Db(Context context) {
     this.context = context;
-    sharedPreferences = context.getSharedPreferences("ITER", Context.MODE_PRIVATE);
-    loadKeys();
+    this.sharedPreferences = this.context.getSharedPreferences("bunk-v15-db", Context.MODE_PRIVATE);
+    this.keys = getkeys();
+    this.currentkey = getcurrentkey();
   }
 
-  public void add(String key) {
-    int index = keys.indexOf(key);
-    if (index > -1) {
-      keys.remove(index);
-    }
-    keys.addFirst(key);
-    saveKeys();
+  public String getCurrentKey() {
+    return this.currentkey;
   }
 
-  public void addValue(String key, String value) {
-    sharedPreferences.edit().putString(key, value).apply();
+  public void setCurrentKey(String key) {
+    this.currentkey = key;
+    this.sharedPreferences.edit().putString("currentkey", key).apply();
   }
 
-  public String get(int index) {
-    return keys.get(index);
+  public String[] getAllKeys() {
+    return this.keys.toArray(new String[this.keys.size()]);
   }
 
   public String getValue(String key) {
-    return sharedPreferences.getString(key, null);
+    return this.sharedPreferences.getString(key, null);
   }
 
-  public String current() {
-    return keys.get(0);
+  public void setValue(String key, String value) {
+    this.keys.add(key);
+    this.sharedPreferences.edit().putString(key, value).apply();
   }
 
-  public int size() {
-    return keys.size();
+  public void clearDb() {
+    this.keys.clear();
+    this.sharedPreferences.edit().clear().apply();
   }
 
-  public void clear() {
-    keys.clear();
-    sharedPreferences.edit().clear().apply();
-  }
-
-  private void loadKeys() {
-    String data = sharedPreferences.getString("keys", null);
-    if (data != null) {
-      keys.addAll(Arrays.asList(data.trim().split(" ")));
+  private TreeSet<String> getkeys() {
+    TreeSet<String> keys = new TreeSet<String>();
+    Map<String, ?> allentries = this.sharedPreferences.getAll();
+    for (Map.Entry<String, ?> entry : allentries.entrySet()) {
+      if (!(entry.getKey().equals("currentkey"))) {
+        keys.add(entry.getKey());
+      }
     }
+    return keys;
   }
 
-  private void saveKeys() {
-    String data = null;
-    if (keys.size() > 0) {
-      data = TextUtils.join(" ", keys.toArray(new String[keys.size()]));
-    }
-    sharedPreferences.edit().putString("keys", data).apply();
+  private String getcurrentkey() {
+    return this.sharedPreferences.getString("currentkey", null);
   }
 
 }
