@@ -16,7 +16,6 @@ public class AboutActivity extends PreferenceActivity implements OnPreferenceCli
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    easteregg = 0;
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.about);
     findPreference("pref_version").setOnPreferenceClickListener(this);
