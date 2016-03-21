@@ -18,9 +18,10 @@ public class Api {
     this.http = new Http(context);
   }
 
-  public Map<String, String> getApiResponse(String rollnumber, String requestid) {
+  public Map<String, String> makeApiRequest(String rollnumber, String requestid) {
     HashMap<String, String> apiresponse = new HashMap<String, String>();
     apiresponse.put("requestid", requestid);
+    apiresponse.put("rollnumber", rollnumber);
     apiresponse.put("update", fetchupdateinfo(rollnumber));
     try {
       String instituteid = fetchinstituteid();
