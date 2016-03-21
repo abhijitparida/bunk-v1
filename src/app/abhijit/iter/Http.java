@@ -23,6 +23,8 @@ public class Http {
     URL endpoint = new URL(url);
     HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
     conn.setRequestMethod("POST");
+    conn.setConnectTimeout(5000);
+    conn.setReadTimeout(5000);
     conn.setRequestProperty("User-Agent", this.useragent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
     conn.setDoOutput(true);
@@ -44,6 +46,8 @@ public class Http {
     URL endPoint = new URL(url);
     HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
     conn.setRequestMethod("GET");
+    conn.setConnectTimeout(5000);
+    conn.setReadTimeout(5000);
     conn.setRequestProperty("User-Agent", this.useragent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
     BufferedReader instream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
