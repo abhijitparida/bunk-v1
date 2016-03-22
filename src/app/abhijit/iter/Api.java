@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class Api {
 
-  private final String API_ENDPOINT_URL = "http://111.93.164.202:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
-  private final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
+  private static final String API_ENDPOINT_URL = "http://111.93.164.202:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
+  private static final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
   private Context context;
   private Http http;
 
@@ -18,61 +18,68 @@ public class Api {
     this.http = new Http(context);
   }
 
-  public Map<String, String> makeApiRequest(String rollnumber, String requestid) {
-    HashMap<String, String> apiresponse = new HashMap<String, String>();
-    apiresponse.put("requestid", requestid);
-    apiresponse.put("rollnumber", rollnumber);
-    apiresponse.put("update", fetchupdateinfo(rollnumber));
+  public Map<String, String> makeApiRequest(String rollNumber, String requestId) {
+    HashMap<String, String> apiResponse = new HashMap<String, String>();
+    apiResponse.put("requestid", requestId);
+    apiResponse.put("rollnumber", rollNumber);
+    apiResponse.put("updatejson", fetchUpdateInfo(rollNumber));
     try {
-      String instituteid = fetchinstituteid();
-      String registrationid = fetchregistrationid(instituteid);
-      String studentid = fetchstudentid(instituteid, rollnumber);
-      if (studentid.equals("0")) {
-        apiresponse.put("error", "Invalid registration number");
-        return apiresponse;
+      String instituteId = fetchInstituteId();
+      String registrationId = fetchRegistrationId();
+      String studentId = fetchStudentId(instituteId, rollNumber);
+      if (studentId.equals("Invalid registration number")) {
+        apiResponse.put("error", studentId);
+        return apiResponse;
       }
-      apiresponse.put("studentjson", fetchstudentjson(instituteid, studentid));
-      apiresponse.put("attendancejson", fetchattendancejson(instituteid, registrationid, studentid));
+      apiResponse.put("studentjson", fetchStudentJson(instituteId, studentId));
+      apiResponse.put("attendancejson", fetchAttendanceJson(instituteId, registrationId,
+          studentId));
     } catch (Exception e) {
-      apiresponse.put("error", "Could not connect to the server");
+      apiResponse.put("error", "Could not connect to the server");
     }
-    return apiresponse;
+    return apiResponse;
   }
 
-  private String fetchupdateinfo(String rollnumber) {
-    String currentversion = this.context.getString(R.string.app_version);
+  private String fetchUpdateInfo(String rollNumber) {
+    String currentVersion = this.context.getString(R.string.app_version);
     try {
-      return this.http.makeGetRequest(this.UPDATE_ENDPOINT_URL + "/check/" + rollnumber + "/" + currentversion);
+      return this.http.makeGetRequest(this.UPDATE_ENDPOINT_URL + "/check/" + rollNumber + "/"
+          + currentVersion);
     } catch (Exception e) {
       return null;
     }
   }
 
-  private String fetchinstituteid() {
+  private String fetchInstituteId() {
     return "SOAUINSD1312A0000002";
   }
 
-  private String fetchregistrationid(String instituteid) {
+  private String fetchRegistrationId() {
     // TODO: Implement xml parsing to fetch and parse registration id automatically
     return "ITERRETD1511A0000001";
   }
 
-  private String fetchstudentid(String instituteid, String rollnumber) throws Exception {
+  private String fetchStudentId(String instituteId, String rollNumber) throws Exception {
     // TODO: Make request data readable
-    String requestdata = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22" + instituteid + "%22%2C%22studentrollno%22%3A%22" + rollnumber + "%22%7D";
-    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestdata);
+    String requestData = "jdata=%7B%22sid%22%3A%22validate%22%2C%22instituteID%22%3A%22"
+        + instituteId + "%22%2C%22studentrollno%22%3A%22" + rollNumber + "%22%7D";
+    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestData);
   }
 
-  private String fetchstudentjson(String instituteid, String studentid) throws Exception {
+  private String fetchStudentJson(String instituteId, String studentId) throws Exception {
     // TODO: Make request data readable
-    String requestdata = "jdata=%7B%22sid%22%3A%22studentdetails%22%2C%22instituteid%22%3A%22" + instituteid + "%22%2C%22studentid%22%3A%22" + studentid + "%22%7D";
-    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestdata);
+    String requestData = "jdata=%7B%22sid%22%3A%22studentdetails%22%2C%22instituteid%22%3A%22"
+        + instituteId + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
+    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestData);
   }
 
-  private String fetchattendancejson(String instituteid, String registrationid, String studentid) throws Exception {
+  private String fetchAttendanceJson(String instituteId, String registrationId, String studentId)
+      throws Exception {
     // TODO: Make request data readable
-    String requestdata = "jdata=%7B%22sid%22%3A%22attendance%22%2C%22instituteid%22%3A%22" + instituteid + "%22%2C%22registrationid%22%3A%22" + registrationid + "%22%2C%22studentid%22%3A%22" + studentid + "%22%7D";
-    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestdata);
+    String requestData = "jdata=%7B%22sid%22%3A%22attendance%22%2C%22instituteid%22%3A%22"
+        + instituteId + "%22%2C%22registrationid%22%3A%22" + registrationId
+        + "%22%2C%22studentid%22%3A%22" + studentId + "%22%7D";
+    return this.http.makePostRequest(this.API_ENDPOINT_URL, requestData);
   }
 
 }

@@ -12,7 +12,7 @@ import android.widget.Toast;
 public class AboutActivity extends PreferenceActivity implements OnPreferenceClickListener {
 
   private Context context = this;
-  private int easteregg;
+  private int easterEgg;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -26,12 +26,14 @@ public class AboutActivity extends PreferenceActivity implements OnPreferenceCli
 
   @Override
   public boolean onPreferenceClick(Preference preference) {
-    if (preference.getKey().equals("pref_version") && ++easteregg == 5) {
-      Toast.makeText(context, "GRG", Toast.LENGTH_LONG).show();
+    String feedbackUrl = "https://goo.gl/forms/MsrY3JciZD";
+    String contributeUrl = "https://github.com/abhijitparida/ITER/";
+    if (preference.getKey().equals("pref_version") && ++this.easterEgg == 5) {
+      Toast.makeText(this.context, "GRG", Toast.LENGTH_LONG).show();
     } else if (preference.getKey().equals("pref_feedback")) {
-      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://goo.gl/forms/MsrY3JciZD")));
+      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(feedbackUrl)));
     } else if (preference.getKey().equals("pref_contribute")) {
-      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/abhijitparida/ITER/")));
+      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(contributeUrl)));
     } else if (preference.getKey().equals("pref_rate")) {
       // TODO: implement this
     }

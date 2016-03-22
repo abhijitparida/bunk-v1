@@ -26,8 +26,7 @@ public class Db {
 
   public String[] getAllKeys() {
     TreeSet<String> keys = new TreeSet<String>();
-    Map<String, ?> allentries = this.sharedPreferences.getAll();
-    for (Map.Entry<String, ?> entry : allentries.entrySet()) {
+    for (Map.Entry<String, ?> entry : this.sharedPreferences.getAll().entrySet()) {
       if (!(entry.getKey().equals("currentkey"))) {
         keys.add(entry.getKey());
       }
@@ -43,7 +42,7 @@ public class Db {
     this.sharedPreferences.edit().putString(key, value).apply();
   }
 
-  public void clearDb() {
+  public void clearAllValues() {
     this.sharedPreferences.edit().clear().apply();
   }
 

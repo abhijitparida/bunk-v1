@@ -33,10 +33,10 @@ public class Course {
   public String getTotalAbsentClasses() {
     // TODO: Refactor: Remove repeated code
     try {
-      int totalclasses = Integer.parseInt(this.totalclasses);
-      int totalpresentclass = Integer.parseInt(this.totalpresentclass);
-      int totalabsentclass = totalclasses - totalpresentclass;
-      return Integer.toString(totalabsentclass);
+      int totalClasses = Integer.parseInt(this.totalclasses);
+      int totalPresentClass = Integer.parseInt(this.totalpresentclass);
+      int totalAbsentClass = totalClasses - totalPresentClass;
+      return Integer.toString(totalAbsentClass);
     } catch (Exception e) {
       return null;
     }
@@ -49,10 +49,10 @@ public class Course {
   public String getPercentPresent() {
     // TODO: Refactor: Remove repeated code
     try {
-      int totalclasses = Integer.parseInt(this.totalclasses);
-      int totalpresentclass = Integer.parseInt(this.totalpresentclass);
-      float percentpresent = (totalpresentclass / (float) totalclasses) * 100;
-      return String.format("%.2f", percentpresent) + "%";
+      int totalClasses = Integer.parseInt(this.totalclasses);
+      int totalPresentClass = Integer.parseInt(this.totalpresentclass);
+      float percentPresent = (totalPresentClass / (float) totalClasses) * 100;
+      return String.format("%.2f", percentPresent) + "%";
     } catch (Exception e) {
       return null;
     }
@@ -61,20 +61,17 @@ public class Course {
   public Map<String, String> getClassBunkStats() {
     // TODO: Refactor: Remove repeated code
     try {
-      int totalclasses = Integer.parseInt(this.totalclasses);
-      int totalpresentclass = Integer.parseInt(this.totalpresentclass);
-      float percentpresent = (totalpresentclass / (float) totalclasses) * 100;
-
       LinkedHashMap<String, String> bunk = new LinkedHashMap<String, String>();
-      int p = (int) percentpresent;
-
+      int totalClasses = Integer.parseInt(this.totalclasses);
+      int totalPresentClass = Integer.parseInt(this.totalpresentclass);
+      float percentPresent = (totalPresentClass / (float) totalClasses) * 100;
+      int p = (int) percentPresent;
       for (int n = 75; n < p; n += 5) {
-        int daysbunk = (int) ((100 * totalpresentclass / (float) n) - (float) totalclasses);
-        if (daysbunk > 0) {
-          bunk.put(Integer.toString(daysbunk), Integer.toString(n) + "%");
+        int daysBunk = (int) ((100 * totalPresentClass / (float) n) - (float) totalClasses);
+        if (daysBunk > 0) {
+          bunk.put(Integer.toString(daysBunk), Integer.toString(n) + "%");
         }
       }
-
       return bunk;
     } catch (Exception e) {
       return null;
@@ -84,24 +81,21 @@ public class Course {
   public Map<String, String> getClassNeedStats() {
     // TODO: Refactor: Remove repeated code
     try {
-      int totalclasses = Integer.parseInt(this.totalclasses);
-      int totalpresentclass = Integer.parseInt(this.totalpresentclass);
-      float percentpresent = (totalpresentclass / (float) totalclasses) * 100;
-
       LinkedHashMap<String, String> need = new LinkedHashMap<String, String>();
-      int p = (int) percentpresent;
-      int nextp = (p + 4) / 5 * 5;
-      if (nextp == p) {
-        nextp = p + 5;
+      int totalClasses = Integer.parseInt(this.totalclasses);
+      int totalPresentClass = Integer.parseInt(this.totalpresentclass);
+      float percentPresent = (totalPresentClass / (float) totalClasses) * 100;
+      int p = (int) percentPresent;
+      int nextP = (p + 4) / 5 * 5;
+      if (nextP == p) {
+        nextP = p + 5;
       }
-
-      for (int n = nextp; n <= 95; n += 5) {
-        int daysneed = (int) ((n * totalclasses - 100 * totalpresentclass) / (float) (100 - n));
-        if (daysneed > 0 && (daysneed + totalclasses <= 50)) {
-          need.put(Integer.toString(daysneed), Integer.toString(n) + "%");
+      for (int n = nextP; n <= 95; n += 5) {
+        int daysNeed = (int) ((n * totalClasses - 100 * totalPresentClass) / (float) (100 - n));
+        if (daysNeed > 0 && (daysNeed + totalClasses <= 50)) {
+          need.put(Integer.toString(daysNeed), Integer.toString(n) + "%");
         }
       }
-
       return need;
     } catch (Exception e) {
       return null;

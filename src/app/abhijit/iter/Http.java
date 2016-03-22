@@ -12,33 +12,33 @@ import java.net.URL;
 public class Http {
 
   private Context context;
-  private String useragent;
+  private String userAgent;
 
   public Http(Context context) {
     this.context = context;
-    this.useragent = WebSettings.getDefaultUserAgent(this.context);
+    this.userAgent = WebSettings.getDefaultUserAgent(this.context);
   }
 
   public String makePostRequest(String url, String data) throws Exception {
-    URL endpoint = new URL(url);
-    HttpURLConnection conn = (HttpURLConnection) endpoint.openConnection();
+    URL endPoint = new URL(url);
+    HttpURLConnection conn = (HttpURLConnection) endPoint.openConnection();
     conn.setRequestMethod("POST");
     conn.setConnectTimeout(5000);
     conn.setReadTimeout(5000);
-    conn.setRequestProperty("User-Agent", this.useragent);
+    conn.setRequestProperty("User-Agent", this.userAgent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
     conn.setDoOutput(true);
-    DataOutputStream outstream = new DataOutputStream(conn.getOutputStream());
-    outstream.writeBytes(data);
-    outstream.flush();
-    outstream.close();
-    BufferedReader instream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-    String instreamline;
+    DataOutputStream outStream = new DataOutputStream(conn.getOutputStream());
+    outStream.writeBytes(data);
+    outStream.flush();
+    outStream.close();
+    BufferedReader inStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    String inStreamLine;
     StringBuffer response = new StringBuffer();
-    while ((instreamline = instream.readLine()) != null) {
-      response.append(instreamline);
+    while ((inStreamLine = inStream.readLine()) != null) {
+      response.append(inStreamLine);
     }
-    instream.close();
+    inStream.close();
     return response.toString();
   }
 
@@ -48,15 +48,15 @@ public class Http {
     conn.setRequestMethod("GET");
     conn.setConnectTimeout(5000);
     conn.setReadTimeout(5000);
-    conn.setRequestProperty("User-Agent", this.useragent);
+    conn.setRequestProperty("User-Agent", this.userAgent);
     conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-    BufferedReader instream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-    String instreamline;
+    BufferedReader inStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    String inStreamLine;
     StringBuffer response = new StringBuffer();
-    while ((instreamline = instream.readLine()) != null) {
-      response.append(instreamline);
+    while ((inStreamLine = inStream.readLine()) != null) {
+      response.append(inStreamLine);
     }
-    instream.close();
+    inStream.close();
     return response.toString();
   }
 
