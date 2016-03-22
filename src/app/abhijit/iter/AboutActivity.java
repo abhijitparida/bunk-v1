@@ -28,6 +28,7 @@ public class AboutActivity extends PreferenceActivity implements OnPreferenceCli
   public boolean onPreferenceClick(Preference preference) {
     String feedbackUrl = "https://goo.gl/forms/MsrY3JciZD";
     String contributeUrl = "https://github.com/abhijitparida/ITER/";
+    String storeUrl = "https://play.google.com/store/apps/details?id=app.abhijit.iter";
     if (preference.getKey().equals("pref_version") && ++this.easterEgg == 5) {
       Toast.makeText(this.context, "GRG", Toast.LENGTH_LONG).show();
     } else if (preference.getKey().equals("pref_feedback")) {
@@ -35,7 +36,7 @@ public class AboutActivity extends PreferenceActivity implements OnPreferenceCli
     } else if (preference.getKey().equals("pref_contribute")) {
       startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(contributeUrl)));
     } else if (preference.getKey().equals("pref_rate")) {
-      // TODO: implement this
+      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(storeUrl)));
     }
     return false;
   }
