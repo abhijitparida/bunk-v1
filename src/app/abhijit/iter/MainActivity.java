@@ -5,11 +5,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,13 +26,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends Activity {
 
   private Context context = this;
+  private JsonParser jsonParser;
+  private int requestId;
   private Db db;
   private Api api;
 
@@ -37,12 +46,14 @@ public class MainActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    db = new Db(context);
-    api = new Api(context);
-    if (db.size() == 0) {
-      promptRegistrationNumber();
+    this.jsonParser = new JsonParser();
+    this.requestId = 0;
+    this.db = new Db(this.context);
+    this.api = new Api(this.context);
+    if (this.db.getCurrentKey() == null) {
+      showHint();
     } else {
-      addRegistrationNumber(db.current());
+      addRegistrationNumber(this.db.getCurrentKey());
     }
   }
 
@@ -56,19 +67,15 @@ public class MainActivity extends Activity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-      case R.id.action_refresh:
-        if (db.size() == 0) {
-          promptRegistrationNumber();
-        } else {
-          addRegistrationNumber(db.current());
-        }
-        return true;
       case R.id.action_add:
-        if (db.size() == 0) {
+        if (this.db.getCurrentKey() == null) {
           promptRegistrationNumber();
         } else {
           promptRegistrationNumberSelection();
         }
+        return true;
+      case R.id.action_about:
+        startActivity(new Intent(this.context, AboutActivity.class));
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -76,9 +83,9 @@ public class MainActivity extends Activity {
   }
 
   private void promptRegistrationNumber() {
-    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-    alertDialog.setTitle("ITER");
-    final EditText editText = new EditText(context);
+    AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
+    alertDialog.setTitle("Add");
+    final EditText editText = new EditText(this.context);
     editText.setInputType(InputType.TYPE_CLASS_NUMBER);
     alertDialog.setView(editText);
     alertDialog.setMessage("Registration Number");
@@ -86,25 +93,30 @@ public class MainActivity extends Activity {
       @Override
       public void onClick(DialogInterface dialog, int which) {
         String registrationNumber = editText.getText().toString().trim();
-        if (registrationNumber.equals("")) {
-          promptRegistrationNumber();
-          return;
+        if (!registrationNumber.equals("")) {
+          addRegistrationNumber(registrationNumber);
         }
-        addRegistrationNumber(registrationNumber);
+      }
+    });
+    alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        dialog.cancel();
       }
     });
     alertDialog.create().show();
   }
 
   private void promptRegistrationNumberSelection() {
-    final String[] items = new String[db.size() + 2];
+    String[] dbKeys = this.db.getAllKeys();
+    final String[] items = new String[dbKeys.length + 2];
     items[0] = "Add Registration Number";
     items[1] = "Clear All";
-    for (int i = 0; i < db.size(); i++) {
-      items[i + 2] = db.get(i);
+    for (int i = 0; i < dbKeys.length; i++) {
+      items[i + 2] = dbKeys[i];
     }
-    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-    alertDialog.setTitle("ITER");
+    AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
+    alertDialog.setTitle("Select");
     alertDialog.setItems(items, new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
@@ -113,10 +125,11 @@ public class MainActivity extends Activity {
             promptRegistrationNumber();
             break;
           case 1:
-            db.clear();
-            renderProfile(null);
+            db.clearAllValues();
+            requestId = -1;
+            clearUi();
+            showHint();
             Toast.makeText(context, "Registration numbers cleared successfully", Toast.LENGTH_SHORT).show();
-            promptRegistrationNumber();
             break;
           default:
             addRegistrationNumber(items[which]);
@@ -126,15 +139,14 @@ public class MainActivity extends Activity {
     alertDialog.create().show();
   }
 
-  private void promptUpdate(String updateMessage) {
-    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+  private void promptUpdate(final String updateUrl, String releaseNotes) {
+    AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
     alertDialog.setTitle("Update Available");
-    alertDialog.setMessage(updateMessage);
-    alertDialog.setCancelable(false);
+    alertDialog.setMessage(releaseNotes);
     alertDialog.setPositiveButton("Update", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://abhijitparida.github.io/ITER/")));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(updateUrl)));
       }
     });
     alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -147,7 +159,7 @@ public class MainActivity extends Activity {
   }
 
   private void promptError(String errorMessage) {
-    AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+    AlertDialog.Builder alertDialog = new AlertDialog.Builder(this.context);
     alertDialog.setTitle("Error");
     alertDialog.setMessage(errorMessage);
     alertDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -161,122 +173,141 @@ public class MainActivity extends Activity {
 
   private void showProgressBar() {
     ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
-    if (db.getValue(db.current()) == null) {
+    if (this.db.getValue(this.db.getCurrentKey()) == null) {
       progressBar = (ProgressBar) findViewById(R.id.progressbar_spinner);
     }
     progressBar.setVisibility(View.VISIBLE);
   }
 
-  private void hideProgressBar() {
-    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
-    ProgressBar progressBarSpinner = (ProgressBar) findViewById(R.id.progressbar_spinner);
-    progressBar.setVisibility(View.INVISIBLE);
-    progressBarSpinner.setVisibility(View.GONE);
+  private void showHint() {
+    TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
+    textViewHint.setVisibility(View.VISIBLE);
+    int lineHeight = (int) (textViewHint.getLineHeight() * 1.5);
+    // TODO: getResources().getDrawable(int) is deprecated
+    Drawable hintIcon = this.context.getResources().getDrawable(R.drawable.ic_hint_add_person);
+    hintIcon.setBounds(0, 0, lineHeight, lineHeight);
+    SpannableStringBuilder builder = new SpannableStringBuilder();
+    builder.append("Use the ").append(" ");
+    builder.setSpan(new ImageSpan(hintIcon), builder.length() - 1, builder.length(), 0);
+    builder.append(" button to add or select your registration number");
+    textViewHint.setText(builder);
   }
 
-  private void addRegistrationNumber(String registrationNumber) {
-    String studentJson = db.getValue(registrationNumber);
-    Student student = Student.parseJson(studentJson);
-    renderProfile(student);
-    db.add(registrationNumber);
-    new fetchData().execute();
-  }
-
-  private void handleApiResponse(ApiResponse apiResponse) {
-    if (apiResponse.updateAvailable) {
-      promptUpdate("A new version of this app is available!");
-    }
-    if (apiResponse.error) {
-      promptError(apiResponse.errorMessage);
-      return;
-    }
-    String oldStudentJson = db.getValue(apiResponse.student.studentRollNumber);
-    Student oldStudent = Student.parseJson(oldStudentJson);
-    db.addValue(apiResponse.student.studentRollNumber, apiResponse.studentJson);
-    renderProfile(apiResponse.student);
-    toastChanges(oldStudent, apiResponse.student);
+  private void showError(String errorMessage) {
+    TextView textViewError = (TextView) findViewById(R.id.textview_error);
+    textViewError.setVisibility(View.VISIBLE);
+    textViewError.setText(errorMessage);
   }
 
   private void renderProfile(Student student) {
-    TextView studentName = (TextView) findViewById(R.id.textview_student_name);
-    TextView studentRollNumber = (TextView) findViewById(R.id.textview_student_roll_number);
-    TextView studentExtraInfo = (TextView) findViewById(R.id.textview_student_extra_info);
-    TextView lastRefreshed = (TextView) findViewById(R.id.textview_last_refreshed);
-    TextView info = (TextView) findViewById(R.id.textview_info);
-    ListView courses = (ListView) findViewById(R.id.listview_courses);
-    studentName.setText("");
-    studentRollNumber.setText("");
-    studentExtraInfo.setText("");
-    lastRefreshed.setVisibility(View.GONE);
-    info.setVisibility(View.GONE);
-    courses.setAdapter(new CoursesAdapter(context, new Course[0]));
     if (student == null) {
       return;
     }
-    studentName.setText(student.name);
-    studentRollNumber.setText(student.studentRollNumber);
-    studentExtraInfo.setText(student.sectionCode + " " + student.programCode + "-" + student.academicYear);
-    String today = new SimpleDateFormat("MMMM dd, yyyy").format(new Date());
-    if (!today.equals(student.lastRefreshed)) {
-      lastRefreshed.setVisibility(View.VISIBLE);
-      lastRefreshed.setText("Last refreshed: " + student.lastRefreshed);
-    }
-    if (student.attendance == null) {
-      info.setVisibility(View.VISIBLE);
-      info.setText("NO ATTENDANCE DATA AVAILABLE");
+    TextView textViewStudentName = (TextView) findViewById(R.id.textview_student_name);
+    TextView textViewStudentRollNumber = (TextView) findViewById(R.id.textview_student_roll_number);
+    TextView textViewStudentExtraInfo = (TextView) findViewById(R.id.textview_student_extra_info);
+    textViewStudentName.setText(student.getName());
+    textViewStudentRollNumber.setText(student.getRollNumber());
+    textViewStudentExtraInfo.setText(student.getSectionCode() + " " + student.getProgramCode()
+        + "-" + student.getAcademicYear());
+    Course[] attendance = student.getAttendance();
+    if (attendance == null || attendance.length == 0) {
+      showError("ATTENDANCE DATA NOT AVAILABLE");
       return;
     }
-    courses.setAdapter(new CoursesAdapter(context, student.attendance));
+    ListView listViewCourses = (ListView) findViewById(R.id.listview_courses);
+    listViewCourses.setAdapter(new CoursesAdapter(this.context, attendance));
   }
 
-  private void toastChanges(Student oldStudent, Student student) {
-    if (oldStudent == null) {
+  private void clearUi() {
+    TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
+    TextView textViewError = (TextView) findViewById(R.id.textview_error);
+    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    ProgressBar progressbarSpinner = (ProgressBar) findViewById(R.id.progressbar_spinner);
+    TextView textViewStudentName = (TextView) findViewById(R.id.textview_student_name);
+    TextView textViewStudentRollNumber = (TextView) findViewById(R.id.textview_student_roll_number);
+    TextView textViewStudentExtraInfo = (TextView) findViewById(R.id.textview_student_extra_info);
+    ListView listViewCourses = (ListView) findViewById(R.id.listview_courses);
+    textViewHint.setVisibility(View.GONE);
+    textViewError.setVisibility(View.GONE);
+    progressBar.setVisibility(View.INVISIBLE);
+    progressbarSpinner.setVisibility(View.GONE);
+    textViewStudentName.setText("");
+    textViewStudentRollNumber.setText("");
+    textViewStudentExtraInfo.setText("");
+    listViewCourses.setAdapter(new CoursesAdapter(this.context, new Course[0]));
+  }
+
+  private void addRegistrationNumber(String registrationNumber) {
+    if (registrationNumber == null) {
       return;
     }
-    int changedSubjectsCount = 0;
-    String changedSubjects = "";
-    for (int i = 0; i < student.attendance.length; i++) {
-      Course course = student.attendance[i];
-      for (int j = 0; j < oldStudent.attendance.length; j++) {
-        Course oldCourse = oldStudent.attendance[j];
-        if (course.subjectCode.equals(oldCourse.subjectCode)) {
-          if (!course.totalClasses.equals(oldCourse.totalClasses)) {
-            changedSubjects += course.name + ", ";
-            changedSubjectsCount++;
-          }
-        }
+    this.db.setCurrentKey(registrationNumber);
+    String studentJson = this.db.getValue(registrationNumber);
+    if (studentJson == null) {
+      this.db.setValue(registrationNumber, null);
+    }
+    clearUi();
+    try {
+      Student student = new Gson().fromJson(studentJson, Student.class);
+      renderProfile(student);
+    } catch (Exception e) {
+      this.db.setValue(registrationNumber, null);
+    }
+    new FetchData().execute(Integer.toString(++requestId));
+  }
+
+  private void handleApiResponse(Map<String, String> apiResponse) {
+    if (apiResponse == null || !apiResponse.get("requestid").equals(Integer.toString(requestId))) {
+      return;
+    }
+    clearUi();
+    String error = apiResponse.get("error");
+    if (error != null) {
+      promptError(error);
+    }
+    try {
+      JsonObject updateJson = jsonParser.parse(apiResponse.get("updatejson")).getAsJsonObject();
+      if (updateJson.get("updateavailable").getAsString().equals("yes")) {
+        promptUpdate(updateJson.get("updateurl").getAsString(), updateJson.get("releasenotes").getAsString());
       }
-    }
-    if (changedSubjectsCount > 0) {
-      String toastText = "UPDATES: " + changedSubjects.substring(0, changedSubjects.length() - 2);
-      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-      Toast.makeText(context, toastText, Toast.LENGTH_LONG).show();
-      Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-      vibrator.vibrate(500);
+    } catch (Exception e) { }
+    if (error == null) {
+      try {
+        JsonObject studentJson = jsonParser.parse(apiResponse.get("studentjson")).getAsJsonArray().get(0).getAsJsonObject();
+        JsonArray attendanceJson = jsonParser.parse(apiResponse.get("attendancejson")).getAsJsonArray();
+        studentJson.add("attendance", attendanceJson);
+        Student student = new Gson().fromJson(studentJson, Student.class);
+        db.setValue(apiResponse.get("rollnumber"), studentJson.toString());
+        renderProfile(student);
+      } catch (Exception e) {
+        db.setValue(apiResponse.get("rollnumber"), null);
+        promptError("Bad API response");
+        showHint();
+      }
+    } else {
+      showHint();
     }
   }
 
-  private class fetchData extends AsyncTask<Void, Void, ApiResponse> {
+  private class FetchData extends AsyncTask<String, Void, Map<String, String>> {
 
     @Override
     protected void onPreExecute() {
       super.onPreExecute();
-      TextView info = (TextView) findViewById(R.id.textview_info);
-      hideProgressBar();
       showProgressBar();
     }
 
     @Override
-    protected ApiResponse doInBackground(Void... params) {
-      return api.getApiResponse(db.current());
+    protected Map<String, String> doInBackground(String... params) {
+      String requestId = params[0];
+      return api.makeApiRequest(db.getCurrentKey(), requestId);
     }
 
     @Override
-    protected void onPostExecute(ApiResponse result) {
-      super.onPostExecute(result);
-      hideProgressBar();
-      handleApiResponse(result);
+    protected void onPostExecute(Map<String, String> apiResponse) {
+      super.onPostExecute(apiResponse);
+      handleApiResponse(apiResponse);
     }
 
   }
@@ -284,21 +315,21 @@ public class MainActivity extends Activity {
   private class CoursesAdapter extends BaseAdapter {
 
     private Context context;
-    private Course[] courses;
+    private Course[] attendance;
 
-    CoursesAdapter(Context context, Course[] courses) {
+    CoursesAdapter(Context context, Course[] attendance) {
       this.context = context;
-      this.courses = courses;
+      this.attendance = attendance;
     }
 
     @Override
     public int getCount() {
-      return courses.length;
+      return this.attendance.length;
     }
 
     @Override
     public Course getItem(int id) {
-      return courses[id];
+      return this.attendance[id];
     }
 
     @Override
@@ -309,36 +340,36 @@ public class MainActivity extends Activity {
     @Override
     public View getView(int id, View view, ViewGroup viewGroup) {
       Course course = getItem(id);
-      LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-      view = inflater.inflate(R.layout.course, viewGroup, false);
+      LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+      view = layoutInflater.inflate(R.layout.course, viewGroup, false);
       if (id % 2 != 0) {
-        view.setBackgroundColor(context.getResources().getColor(R.color.white));
+        // TODO: getResources().getColor(int) is deprecated
+        view.setBackgroundColor(this.context.getResources().getColor(R.color.white));
       }
-      TextView courseName = (TextView) view.findViewById(R.id.textview_course_name);
-      TextView courseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
-      TextView courseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
-      courseName.setText(course.name + "\n" + course.subjectCode);
-      courseAttendance.setText("Present: " + course.totalPresentClass + "/" + course.totalClasses + " [" + course.percentPresentClass + "]\nAbsent: " + course.totalAbsentClass + (course.totalAbsentClass.equals("1") ? " class" : " classes"));
-      String extraInfo = "";
-      if (!course.bunk.isEmpty()) {
-        for (Map.Entry<String, String> bunk : course.bunk.entrySet()) {
-          String days = bunk.getKey();
-          String attendance = bunk.getValue();
-          extraInfo += "Bunk " + days + (course.totalAbsentClass.equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
-        }
+      TextView textViewCourseName = (TextView) view.findViewById(R.id.textview_course_name);
+      TextView textViewCourseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
+      TextView textViewCourseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
+      textViewCourseName.setText(course.getName() + "\n" + course.getSubjectCode());
+      // TODO: show leave taken if not zero
+      // TODO: make things more readable
+      textViewCourseAttendance.setText("Present: " + course.getTotalPresentClasses() + "/" + course.getTotalClasses() + " [" + course.getPercentPresent() + "]"
+          + "\nAbsent: " + course.getTotalAbsentClasses() + (course.getTotalAbsentClasses().equals("1") ? " class" : " classes"));
+      String courseExtraInfo = "";
+      for (Map.Entry<String, String> bunk : course.getClassBunkStats().entrySet()) {
+        String days = bunk.getKey();
+        String attendance = bunk.getValue();
+        courseExtraInfo += "Bunk " + days + (course.getTotalAbsentClasses().equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
       }
-      if (!course.need.isEmpty()) {
-        for (Map.Entry<String, String> need : course.need.entrySet()) {
-          String days = need.getKey();
-          String attendance = need.getValue();
-          extraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
-        }
+      for (Map.Entry<String, String> need : course.getClassNeedStats().entrySet()) {
+        String days = need.getKey();
+        String attendance = need.getValue();
+        courseExtraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
       }
-      if (!extraInfo.isEmpty()) {
-        courseExtraInfo.setVisibility(View.VISIBLE);
-        courseExtraInfo.setText(extraInfo.substring(0, extraInfo.length() - 1));
+      if (!courseExtraInfo.isEmpty()) {
+        textViewCourseExtraInfo.setVisibility(View.VISIBLE);
+        textViewCourseExtraInfo.setText(courseExtraInfo.substring(0, courseExtraInfo.length() - 1));
       } else {
-        courseExtraInfo.setVisibility(View.GONE);
+        textViewCourseExtraInfo.setVisibility(View.GONE);
       }
       return view;
     }
