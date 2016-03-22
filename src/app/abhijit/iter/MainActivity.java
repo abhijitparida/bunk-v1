@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
