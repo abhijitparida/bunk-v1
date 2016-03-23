@@ -126,7 +126,9 @@ public class MainActivity extends Activity {
           case 1:
             db.clearAllValues();
             requestId = -1;
-            clearUi();
+            clearProfile();
+            hideError();
+            hideProgressBar();
             showHint();
             Toast.makeText(context, "Registration numbers cleared successfully", Toast.LENGTH_SHORT).show();
             break;
@@ -178,6 +180,13 @@ public class MainActivity extends Activity {
     progressBar.setVisibility(View.VISIBLE);
   }
 
+  private void hideProgressBar() {
+    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
+    ProgressBar progressbarSpinner = (ProgressBar) findViewById(R.id.progressbar_spinner);
+    progressBar.setVisibility(View.INVISIBLE);
+    progressbarSpinner.setVisibility(View.GONE);
+  }
+
   private void showHint() {
     TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
     textViewHint.setVisibility(View.VISIBLE);
@@ -192,10 +201,20 @@ public class MainActivity extends Activity {
     textViewHint.setText(builder);
   }
 
+  private void hideHint() {
+  TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
+  textViewHint.setVisibility(View.GONE);
+  }
+
   private void showError(String errorMessage) {
     TextView textViewError = (TextView) findViewById(R.id.textview_error);
     textViewError.setVisibility(View.VISIBLE);
     textViewError.setText(errorMessage);
+  }
+
+  private void hideError() {
+  TextView textViewError = (TextView) findViewById(R.id.textview_error);
+    textViewError.setVisibility(View.GONE);
   }
 
   private void renderProfile(Student student) {
@@ -218,19 +237,11 @@ public class MainActivity extends Activity {
     listViewCourses.setAdapter(new CoursesAdapter(this.context, attendance));
   }
 
-  private void clearUi() {
-    TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
-    TextView textViewError = (TextView) findViewById(R.id.textview_error);
-    ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressbar);
-    ProgressBar progressbarSpinner = (ProgressBar) findViewById(R.id.progressbar_spinner);
+  private void clearProfile() {
     TextView textViewStudentName = (TextView) findViewById(R.id.textview_student_name);
     TextView textViewStudentRollNumber = (TextView) findViewById(R.id.textview_student_roll_number);
     TextView textViewStudentExtraInfo = (TextView) findViewById(R.id.textview_student_extra_info);
     ListView listViewCourses = (ListView) findViewById(R.id.listview_courses);
-    textViewHint.setVisibility(View.GONE);
-    textViewError.setVisibility(View.GONE);
-    progressBar.setVisibility(View.INVISIBLE);
-    progressbarSpinner.setVisibility(View.GONE);
     textViewStudentName.setText("");
     textViewStudentRollNumber.setText("");
     textViewStudentExtraInfo.setText("");
@@ -241,12 +252,15 @@ public class MainActivity extends Activity {
     if (registrationNumber == null) {
       return;
     }
+    clearProfile();
+    hideHint();
+    hideError();
+    hideProgressBar();
     this.db.setCurrentKey(registrationNumber);
     String studentJson = this.db.getValue(registrationNumber);
     if (studentJson == null) {
       this.db.setValue(registrationNumber, null);
     }
-    clearUi();
     try {
       Student student = new Gson().fromJson(studentJson, Student.class);
       renderProfile(student);
@@ -260,7 +274,6 @@ public class MainActivity extends Activity {
     if (apiResponse == null || !apiResponse.get("requestid").equals(Integer.toString(requestId))) {
       return;
     }
-    clearUi();
     String error = apiResponse.get("error");
     if (error != null) {
       promptError(error);
@@ -278,13 +291,15 @@ public class MainActivity extends Activity {
         studentJson.add("attendance", attendanceJson);
         Student student = new Gson().fromJson(studentJson, Student.class);
         db.setValue(apiResponse.get("rollnumber"), studentJson.toString());
+        hideHint();
+        hideError();
         renderProfile(student);
       } catch (Exception e) {
         db.setValue(apiResponse.get("rollnumber"), null);
         promptError("Bad API response");
-        showHint();
       }
-    } else {
+    }
+    if (db.getValue(apiResponse.get("rollnumber")) == null) {
       showHint();
     }
   }
@@ -306,6 +321,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPostExecute(Map<String, String> apiResponse) {
       super.onPostExecute(apiResponse);
+      hideProgressBar();
       handleApiResponse(apiResponse);
     }
 
