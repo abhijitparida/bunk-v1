@@ -9,6 +9,7 @@ public class Api {
 
   private static final String API_ENDPOINT_URL = "http://111.93.164.202:8282/CampusLynxSOA/CounsellingRequest?refor=StudentOnlineDetailService";
   private static final String UPDATE_ENDPOINT_URL = "http://iter-update-server.herokuapp.com";
+
   private Context context;
   private Http http;
 
@@ -21,7 +22,6 @@ public class Api {
   public Map<String, String> makeApiRequest(String rollNumber, String requestId) {
     HashMap<String, String> apiResponse = new HashMap<String, String>();
     apiResponse.put("requestid", requestId);
-    apiResponse.put("rollnumber", rollNumber);
     apiResponse.put("updatejson", fetchUpdateInfo(rollNumber));
     try {
       String instituteId = fetchInstituteId();
