@@ -24,5 +24,5 @@
     android:enabled="true" />
   <Preference
     android:title="Pro-Tip"
-    android:summary="You can bunk 12 classes in a 4-credit course and 9 classes in a 3-credit course in a semester." />
+    android:summary="You can bunk 12 classes in each 4-credit course (subjects with 4 classes per week) and 9 classes in each 3-credit course in a semester." />
 </PreferenceScreen>
