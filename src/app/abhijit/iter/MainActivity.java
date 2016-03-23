@@ -203,8 +203,8 @@ public class MainActivity extends Activity {
   }
 
   private void hideHint() {
-  TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
-  textViewHint.setVisibility(View.GONE);
+    TextView textViewHint = (TextView) findViewById(R.id.textview_hint);
+    textViewHint.setVisibility(View.GONE);
   }
 
   private void showError(String errorMessage) {
@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
   }
 
   private void hideError() {
-  TextView textViewError = (TextView) findViewById(R.id.textview_error);
+    TextView textViewError = (TextView) findViewById(R.id.textview_error);
     textViewError.setVisibility(View.GONE);
   }
 
@@ -279,6 +279,26 @@ public class MainActivity extends Activity {
     String error = apiResponse.get("error");
     if (error != null) {
       promptError(error);
+    } else {
+      try {
+        JsonObject studentJson = jsonParser.parse(apiResponse.get("studentjson")).getAsJsonArray().get(0).getAsJsonObject();
+        try {
+          JsonArray attendanceJson = jsonParser.parse(apiResponse.get("attendancejson")).getAsJsonArray();
+          studentJson.add("attendance", attendanceJson);
+        } catch (Exception e) {
+          studentJson.add("attendance", null);
+        }
+        Student student = new Gson().fromJson(studentJson, Student.class);
+        db.setValue(db.getCurrentKey(), studentJson.toString());
+        hideHint();
+        hideError();
+        renderProfile(student);
+      } catch (Exception e) {
+        promptError("Bad API response");
+      }
+    }
+    if (db.getValue(db.getCurrentKey()) == null) {
+      showHint();
     }
     try {
       JsonObject updateJson = jsonParser.parse(apiResponse.get("updatejson")).getAsJsonObject();
@@ -286,24 +306,6 @@ public class MainActivity extends Activity {
         promptUpdate(updateJson.get("updateurl").getAsString(), updateJson.get("releasenotes").getAsString());
       }
     } catch (Exception e) { }
-    if (error == null) {
-      try {
-        JsonObject studentJson = jsonParser.parse(apiResponse.get("studentjson")).getAsJsonArray().get(0).getAsJsonObject();
-        JsonArray attendanceJson = jsonParser.parse(apiResponse.get("attendancejson")).getAsJsonArray();
-        studentJson.add("attendance", attendanceJson);
-        Student student = new Gson().fromJson(studentJson, Student.class);
-        db.setValue(apiResponse.get("rollnumber"), studentJson.toString());
-        hideHint();
-        hideError();
-        renderProfile(student);
-      } catch (Exception e) {
-        db.setValue(apiResponse.get("rollnumber"), null);
-        promptError("Bad API response");
-      }
-    }
-    if (db.getValue(apiResponse.get("rollnumber")) == null) {
-      showHint();
-    }
   }
 
   private class FetchData extends AsyncTask<String, Void, Map<String, String>> {
@@ -357,37 +359,41 @@ public class MainActivity extends Activity {
 
     @Override
     public View getView(int id, View view, ViewGroup viewGroup) {
-      Course course = getItem(id);
       LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       view = layoutInflater.inflate(R.layout.course, viewGroup, false);
-      if (id % 2 != 0) {
-        // TODO: getResources().getColor(int) is deprecated
-        view.setBackgroundColor(this.context.getResources().getColor(R.color.white));
-      }
-      TextView textViewCourseName = (TextView) view.findViewById(R.id.textview_course_name);
-      TextView textViewCourseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
-      TextView textViewCourseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
-      textViewCourseName.setText(course.getName() + "\n" + course.getSubjectCode());
-      // TODO: show leave taken if not zero
-      // TODO: make things more readable
-      textViewCourseAttendance.setText("Present: " + course.getTotalPresentClasses() + "/" + course.getTotalClasses() + " [" + course.getPercentPresent() + "]"
-          + "\nAbsent: " + course.getTotalAbsentClasses() + (course.getTotalAbsentClasses().equals("1") ? " class" : " classes"));
-      String courseExtraInfo = "";
-      for (Map.Entry<String, String> bunk : course.getClassBunkStats().entrySet()) {
-        String days = bunk.getKey();
-        String attendance = bunk.getValue();
-        courseExtraInfo += "Bunk " + days + (course.getTotalAbsentClasses().equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
-      }
-      for (Map.Entry<String, String> need : course.getClassNeedStats().entrySet()) {
-        String days = need.getKey();
-        String attendance = need.getValue();
-        courseExtraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
-      }
-      if (!courseExtraInfo.isEmpty()) {
-        textViewCourseExtraInfo.setVisibility(View.VISIBLE);
-        textViewCourseExtraInfo.setText(courseExtraInfo.substring(0, courseExtraInfo.length() - 1));
-      } else {
-        textViewCourseExtraInfo.setVisibility(View.GONE);
+      try {
+        Course course = getItem(id);
+        if (id % 2 != 0) {
+          // TODO: getResources().getColor(int) is deprecated
+          view.setBackgroundColor(this.context.getResources().getColor(R.color.white));
+        }
+        TextView textViewCourseName = (TextView) view.findViewById(R.id.textview_course_name);
+        TextView textViewCourseAttendance = (TextView) view.findViewById(R.id.textview_course_attendance);
+        TextView textViewCourseExtraInfo = (TextView) view.findViewById(R.id.textview_course_extra_info);
+        textViewCourseName.setText(course.getName() + "\n" + course.getSubjectCode());
+        // TODO: show leave taken if not zero
+        // TODO: make things more readable
+        textViewCourseAttendance.setText("Present: " + course.getTotalPresentClasses() + "/" + course.getTotalClasses() + " [" + course.getPercentPresent() + "]"
+            + "\nAbsent: " + course.getTotalAbsentClasses() + (course.getTotalAbsentClasses().equals("1") ? " class" : " classes"));
+        String courseExtraInfo = "";
+        for (Map.Entry<String, String> bunk : course.getClassBunkStats().entrySet()) {
+          String days = bunk.getKey();
+          String attendance = bunk.getValue();
+          courseExtraInfo += "Bunk " + days + (course.getTotalAbsentClasses().equals("0") ? "" : " more") + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        }
+        for (Map.Entry<String, String> need : course.getClassNeedStats().entrySet()) {
+          String days = need.getKey();
+          String attendance = need.getValue();
+          courseExtraInfo += "Need " + days + " more" + (days.equals("1") ? " class" : " classes") + " for " + attendance + "\n";
+        }
+        if (!courseExtraInfo.isEmpty()) {
+          textViewCourseExtraInfo.setVisibility(View.VISIBLE);
+          textViewCourseExtraInfo.setText(courseExtraInfo.substring(0, courseExtraInfo.length() - 1));
+        } else {
+          textViewCourseExtraInfo.setVisibility(View.GONE);
+        }
+      } catch (Exception e) {
+        showError("ATTENDANCE DATA NOT AVAILABLE");
       }
       return view;
     }
