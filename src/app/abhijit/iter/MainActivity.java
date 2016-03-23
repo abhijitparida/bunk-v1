@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
       this.db.setValue(registrationNumber, null);
     }
     this.requestId = UUID.randomUUID().toString();
-    new FetchData().execute(this.requestId);
+    new FetchData().execute(registrationNumber, this.requestId);
   }
 
   private void handleApiResponse(Map<String, String> apiResponse) {
@@ -316,8 +316,9 @@ public class MainActivity extends Activity {
 
     @Override
     protected Map<String, String> doInBackground(String... params) {
-      String requestId = params[0];
-      return api.makeApiRequest(db.getCurrentKey(), requestId);
+      String registrationNumber = params[0];
+      String requestId = params[1];
+      return api.makeApiRequest(registrationNumber, requestId);
     }
 
     @Override
