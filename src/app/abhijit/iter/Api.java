@@ -27,8 +27,8 @@ public class Api {
       String instituteId = fetchInstituteId();
       String registrationId = fetchRegistrationId();
       String studentId = fetchStudentId(instituteId, rollNumber);
-      if (studentId.equals("Invalid registration number")) {
-        apiResponse.put("error", studentId);
+      if (studentId.equals("0")) {
+        apiResponse.put("error", "Invalid registration number");
         return apiResponse;
       }
       apiResponse.put("studentjson", fetchStudentJson(instituteId, studentId));
