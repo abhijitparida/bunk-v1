@@ -32,12 +32,13 @@ import com.google.gson.JsonParser;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends Activity {
 
   private Context context = this;
   private JsonParser jsonParser;
-  private int requestId;
+  private String requestId;
   private Db db;
   private Api api;
 
@@ -46,7 +47,7 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
     this.jsonParser = new JsonParser();
-    this.requestId = 0;
+    this.requestId = null;
     this.db = new Db(this.context);
     this.api = new Api(this.context);
     if (this.db.getCurrentKey() == null) {
@@ -125,7 +126,7 @@ public class MainActivity extends Activity {
             break;
           case 1:
             db.clearAllValues();
-            requestId = -1;
+            requestId = null;
             clearProfile();
             hideError();
             hideProgressBar();
@@ -267,11 +268,12 @@ public class MainActivity extends Activity {
     } catch (Exception e) {
       this.db.setValue(registrationNumber, null);
     }
-    new FetchData().execute(Integer.toString(++requestId));
+    this.requestId = UUID.randomUUID().toString();
+    new FetchData().execute(this.requestId);
   }
 
   private void handleApiResponse(Map<String, String> apiResponse) {
-    if (apiResponse == null || !apiResponse.get("requestid").equals(Integer.toString(requestId))) {
+    if (apiResponse == null || !apiResponse.get("requestid").equals(this.requestId)) {
       return;
     }
     String error = apiResponse.get("error");
