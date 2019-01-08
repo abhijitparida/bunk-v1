@@ -5,7 +5,7 @@ Studying in ITER? Tired of trying to figure out if you can bunk a class or not? 
 
 [<img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" width="200px" />](https://play.google.com/store/apps/details?id=app.abhijit.iter&utm_source=global_co&utm_medium=prtnr&utm_content=Mar2515&utm_campaign=PartBadge&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
 
-##Build
+## Build
 
 Make sure that you have `jdk` and `ant` installed, and have `Android SDK` configured in your path. Clone the repo
 
@@ -21,11 +21,11 @@ $ make
 
 to build the app. The generated .apk will be in `/bin/ITER-debug.apk`.
 
-##Contribute
+## Contribute
 
 Feel free to send a pull request if you want to contribute. Make sure your code follows the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 
-##License
+## License
 
 [MIT](LICENSE)
 
